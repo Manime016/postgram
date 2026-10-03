@@ -78,6 +78,16 @@ class User(
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    conversation_participants = relationship(
+        "ConversationParticipant",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    sent_messages = relationship(
+        "Message",
+        back_populates="sender",
+        cascade="all, delete-orphan",
+    )
 
 
 class Post(Base):
@@ -184,6 +194,91 @@ class Like(Base):
             "post_id",
             name="uq_like_user_post",
         ),
+    )
+
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    participants = relationship(
+        "ConversationParticipant",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+    )
+    messages = relationship(
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+    )
+
+
+class ConversationParticipant(Base):
+    __tablename__ = "conversation_participants"
+
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    conversation_id = Column(
+        CHAR(36),
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(
+        CHAR(36),
+        ForeignKey("user.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    joined_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_read_at = Column(DateTime, nullable=True)
+
+    conversation = relationship(
+        "Conversation",
+        back_populates="participants",
+    )
+    user = relationship(
+        "User",
+        back_populates="conversation_participants",
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "conversation_id",
+            "user_id",
+            name="uq_conversation_user",
+        ),
+    )
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(CHAR(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    conversation_id = Column(
+        CHAR(36),
+        ForeignKey("conversations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    sender_id = Column(
+        CHAR(36),
+        ForeignKey("user.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    content = Column(Text, nullable=False)
+    message_type = Column(String(30), nullable=False, default="text")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    edited_at = Column(DateTime, nullable=True)
+    deleted_at = Column(DateTime, nullable=True)
+
+    conversation = relationship(
+        "Conversation",
+        back_populates="messages",
+    )
+    sender = relationship(
+        "User",
+        back_populates="sent_messages",
     )
 
 
