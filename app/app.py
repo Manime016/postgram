@@ -3,6 +3,9 @@ import os
 import shutil
 import tempfile
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 from app.schemas import UserCreate, UserRead
 
 from fastapi import (
@@ -43,6 +46,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/", include_in_schema=False)
+async def frontend():
+    return FileResponse("static/index.html")
 
 
 # =========================
