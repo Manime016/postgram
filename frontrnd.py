@@ -23,158 +23,369 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
     :root {
-        --bg: #f7f5ef;
-        --surface: #ffffff;
-        --surface-soft: #f1eee7;
-        --border: #e5e0d7;
-        --text: #20232a;
-        --muted: #74777f;
-        --accent: #ff5c5c;
-        --purple: #7567e8;
-        --green: #4e9b68;
+        --bg: #09090b;
+        --surface: #111114;
+        --surface-2: #17171c;
+        --surface-3: #1d1d23;
+        --line: #292930;
+        --text: #f4f4ee;
+        --muted: #92929c;
+        --acid: #d7ff3f;
+        --acid-soft: rgba(215,255,63,.12);
+        --violet: #8b72ff;
+        --danger: #ff6678;
+    }
+
+    html, body, [class*="css"] {
+        font-family: "DM Sans", sans-serif;
     }
 
     .stApp {
         background:
-            radial-gradient(circle at 5% 0%, rgba(255,92,92,.10), transparent 25%),
-            radial-gradient(circle at 95% 100%, rgba(117,103,232,.10), transparent 28%),
+            radial-gradient(circle at 8% 0%, rgba(215,255,63,.055), transparent 23%),
+            radial-gradient(circle at 96% 8%, rgba(139,114,255,.075), transparent 24%),
             var(--bg);
         color: var(--text);
-        font-family: "DM Sans", sans-serif;
+    }
+
+    [data-testid="stHeader"] {
+        background: rgba(9,9,11,.72);
+        backdrop-filter: blur(18px);
     }
 
     [data-testid="stSidebar"] {
-        background: #fffdf9;
-        border-right: 1px solid var(--border);
+        background: rgba(13,13,16,.96);
+        border-right: 1px solid var(--line);
+    }
+
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 1.2rem;
     }
 
     .block-container {
-        max-width: 1180px;
-        padding-top: 1.5rem;
-        padding-bottom: 5rem;
+        max-width: 1120px;
+        padding: 2.2rem 2.5rem 6rem;
     }
 
-    h1,h2,h3 {
+    h1, h2, h3, h4 {
         font-family: "Space Grotesk", sans-serif !important;
         color: var(--text) !important;
-        letter-spacing: -1.4px;
+        letter-spacing: -1.8px;
     }
 
-    div.stButton > button {
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: white;
+    p, label, .stMarkdown, .stCaption {
         color: var(--text);
-        font-weight: 600;
-        min-height: 42px;
     }
 
-    div.stButton > button:hover {
-        border-color: var(--accent);
-        color: var(--accent);
+    .brand-mark {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin: 0 0 6px;
     }
 
-    div.stButton > button[kind="primary"] {
-        background: var(--accent);
-        color: white;
-        border: 0;
+    .brand-symbol {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        background: var(--acid);
+        color: #0b0b0d;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        border-radius: 9px;
+        box-shadow: 0 0 28px rgba(215,255,63,.14);
     }
 
-    .top-hero {
-        background: linear-gradient(135deg, #fff 0%, #fff8f5 55%, #f2efff 100%);
-        border: 1px solid var(--border);
-        border-radius: 26px;
-        padding: 30px;
-        margin-bottom: 20px;
+    .brand-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.12rem;
+        font-weight: 700;
+        letter-spacing: -.5px;
+        color: var(--text);
     }
 
-    .hero-kicker {
-        color: var(--accent);
-        font-size: .72rem;
-        font-weight: 800;
-        letter-spacing: 2px;
+    .brand-sub {
+        margin-left: 45px;
+        color: var(--muted);
+        font-family: "DM Mono", monospace;
+        font-size: .62rem;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
+    }
+
+    .section-kicker {
+        color: var(--acid);
+        font-family: "DM Mono", monospace;
+        font-size: .66rem;
+        font-weight: 500;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(145deg, #121216 0%, #101014 60%, #16141e 100%);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 34px 36px;
+        margin-bottom: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.18);
+    }
+
+    .hero:after {
+        content: "✦";
+        position: absolute;
+        right: 34px;
+        top: 24px;
+        color: var(--acid);
+        font-size: 78px;
+        line-height: 1;
+        opacity: .09;
+        transform: rotate(15deg);
     }
 
     .hero-title {
         font-family: "Space Grotesk", sans-serif;
-        font-size: 42px;
-        line-height: 1.03;
+        font-size: clamp(2.6rem, 6vw, 4.6rem);
+        line-height: .94;
         font-weight: 700;
-        letter-spacing: -2.5px;
-        margin-top: 8px;
+        letter-spacing: -4px;
+        max-width: 760px;
+        color: var(--text);
     }
 
     .hero-sub {
         color: var(--muted);
         max-width: 650px;
-        font-size: 1.03rem;
+        font-size: .98rem;
         line-height: 1.65;
-        margin-top: 10px;
+        margin-top: 16px;
+    }
+
+    .eyebrow {
+        color: var(--acid);
+        font-family: "DM Mono", monospace;
+        font-size: .64rem;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+    }
+
+    div.stButton > button,
+    div[data-testid="stFormSubmitButton"] > button {
+        border-radius: 10px;
+        min-height: 42px;
+        border: 1px solid var(--line);
+        background: var(--surface-2);
+        color: var(--text);
+        font-weight: 600;
+        transition: .18s ease;
+    }
+
+    div.stButton > button:hover,
+    div[data-testid="stFormSubmitButton"] > button:hover {
+        border-color: var(--acid);
+        color: var(--acid);
+        transform: translateY(-1px);
+    }
+
+    div.stButton > button[kind="primary"],
+    div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
+        background: var(--acid);
+        color: #0a0a0c;
+        border-color: var(--acid);
+        box-shadow: 0 8px 28px rgba(215,255,63,.10);
+    }
+
+    div.stButton > button[kind="primary"]:hover,
+    div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
+        color: #0a0a0c;
+        background: #e1ff68;
+    }
+
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextArea"] textarea,
+    [data-testid="stFileUploaderDropzone"] {
+        background: var(--surface-2) !important;
+        color: var(--text) !important;
+        border-color: var(--line) !important;
+        border-radius: 10px !important;
+    }
+
+    [data-baseweb="select"] > div,
+    [data-baseweb="popover"] {
+        background: var(--surface-2);
+        border-color: var(--line);
+        color: var(--text);
+    }
+
+    [data-testid="stExpander"] {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+    }
+
+    [data-testid="stMetric"] {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: var(--muted) !important;
+        font-family: "DM Mono", monospace;
+        font-size: .64rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: var(--text) !important;
+        font-family: "Space Grotesk", sans-serif;
+    }
+
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: var(--surface);
+        border-color: var(--line) !important;
+        border-radius: 18px !important;
+    }
+
+    .post-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 2px 2px 12px;
+    }
+
+    .post-user {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 600;
+        color: var(--text);
     }
 
     .post-meta {
         color: var(--muted);
-        font-size: .82rem;
+        font-family: "DM Mono", monospace;
+        font-size: .62rem;
+        letter-spacing: .2px;
     }
 
-    .post-user {
-        font-weight: 700;
+    .post-caption {
+        font-size: .95rem;
+        line-height: 1.6;
+        padding: 12px 2px 4px;
+    }
+
+    .action-row {
+        color: var(--muted);
+        font-family: "DM Mono", monospace;
+        font-size: .66rem;
+        letter-spacing: .4px;
+        text-transform: uppercase;
     }
 
     .stat-card {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: 18px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
         padding: 18px;
-        text-align: center;
     }
 
     .stat-number {
         font-family: "Space Grotesk", sans-serif;
-        font-size: 28px;
+        font-size: 30px;
         font-weight: 700;
+        color: var(--text);
     }
 
     .stat-label {
         color: var(--muted);
-        font-size: .82rem;
+        font-family: "DM Mono", monospace;
+        font-size: .62rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-top: 3px;
     }
 
     .profile-hero {
-        background: linear-gradient(135deg, #20232a, #3b394c);
-        color: white;
-        border-radius: 26px;
-        padding: 30px;
-        margin-bottom: 20px;
+        background:
+            radial-gradient(circle at 90% 20%, rgba(139,114,255,.25), transparent 28%),
+            linear-gradient(135deg, #141418, #0d0d10);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 32px;
+        margin-bottom: 22px;
     }
 
     .profile-email {
-        font-size: 1.35rem;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 2rem;
         font-weight: 700;
+        letter-spacing: -1.5px;
     }
 
     .profile-small {
-        color: #c7c5cf;
-        margin-top: 5px;
+        color: var(--muted);
+        margin-top: 7px;
     }
 
     .comment-line {
-        padding: 8px 0;
-        border-bottom: 1px solid #eee9e0;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
     }
 
     .comment-user {
         font-weight: 700;
-        font-size: .88rem;
+        font-size: .86rem;
     }
 
     .comment-text {
-        color: #4f5259;
-        font-size: .92rem;
+        color: #c0c0c8;
+        font-size: .9rem;
+    }
+
+    .mono {
+        font-family: "DM Mono", monospace;
+    }
+
+    [data-testid="stSidebar"] .stRadio label {
+        border-radius: 9px;
+        padding: 5px 8px;
+    }
+
+    [data-testid="stSidebar"] .stRadio label:hover {
+        background: var(--acid-soft);
+    }
+
+    [data-testid="stSidebar"] [aria-checked="true"] + div {
+        color: var(--acid);
+    }
+
+    .divider-line {
+        height: 1px;
+        background: var(--line);
+        margin: 20px 0;
+    }
+
+    @media (max-width: 800px) {
+        .block-container {
+            padding: 1.2rem 1rem 4rem;
+        }
+        .hero {
+            padding: 26px 22px;
+            border-radius: 18px;
+        }
+        .hero-title {
+            font-size: 3rem;
+            letter-spacing: -2.6px;
+        }
     }
     </style>
     """,
@@ -486,8 +697,8 @@ def auth_screen():
     with left:
         st.markdown(
             """
-            <div class="top-hero">
-                <div class="hero-kicker">POSTGRAM / SOCIAL</div>
+            <div class="hero">
+                <div class="section-kicker">POSTGRAM / SOCIAL</div>
                 <div class="hero-title">Your moments.<br>One visual home.</div>
                 <div class="hero-sub">
                     Share photos and videos, collect reactions,
@@ -523,7 +734,7 @@ def auth_screen():
                     placeholder="Your password",
                 )
                 submitted = st.form_submit_button(
-                    "Enter Postgram →",
+                    "→  Enter Postgram",
                     type="primary",
                     use_container_width=True,
                 )
@@ -546,7 +757,7 @@ def auth_screen():
                     placeholder="At least 8 characters",
                 )
                 submitted = st.form_submit_button(
-                    "Create account →",
+                    "✦  Create account",
                     type="primary",
                     use_container_width=True,
                 )
@@ -561,7 +772,7 @@ def auth_screen():
 
 
 def create_post_panel():
-    with st.expander("＋  Create a new moment", expanded=False):
+    with st.expander("✦  Create a new moment", expanded=False):
         uploaded_file = st.file_uploader(
             "Choose a photo or video",
             type=[
@@ -594,7 +805,7 @@ def create_post_panel():
         )
 
         if st.button(
-            "Publish moment →",
+            "✦  Publish moment",
             type="primary",
             use_container_width=True,
         ):
@@ -607,32 +818,32 @@ def create_post_panel():
 
 def render_sidebar():
     with st.sidebar:
-        st.markdown("## ✦ Postgram")
-        st.caption("A visual social space.")
+        <div class="brand-mark"><div class="brand-symbol">✦</div><div class="brand-name">POSTGRAM</div></div>
+        <div class="brand-sub">visual social space</div>
         st.divider()
 
         page = st.radio(
             "Navigate",
-            ["Home", "Explore", "Create", "Profile"],
+            ["⌂  Home", "⌕  Explore", "＋  Create", "◉  Profile"],
             index=[
                 "Home", "Explore", "Create", "Profile"
             ].index(st.session_state.page),
         )
 
         if page != st.session_state.page:
-            st.session_state.page = page
+            st.session_state.page = page.split("  ", 1)[-1]
             st.rerun()
 
         st.divider()
-        st.markdown("**Signed in as**")
+        st.markdown("<span class=\"eyebrow\">signed in as</span>", unsafe_allow_html=True)
         st.caption(st.session_state.email)
 
-        if st.button("↻ Refresh", use_container_width=True):
+        if st.button("↻  Refresh", use_container_width=True):
             st.session_state.feed_cache = None
             st.session_state.profile_cache = None
             st.rerun()
 
-        if st.button("Sign out", use_container_width=True):
+        if st.button("↪  Sign out", use_container_width=True):
             logout()
 
 
@@ -669,7 +880,7 @@ def render_post(post, show_actions=True):
         )
 
         with like_col:
-            label = f"♥ {like_count}" if liked else f"♡ {like_count}"
+            label = f"♥  {like_count}" if liked else f"♡  {like_count}"
             if st.button(
                 label,
                 key=f"like_{post['id']}",
@@ -679,7 +890,7 @@ def render_post(post, show_actions=True):
                 st.rerun()
 
         with comment_col:
-            st.caption(f"💬 {comment_count} comments")
+            st.caption(f"◌  {comment_count} comments")
 
         with file_col:
             st.caption(post.get("file_name", ""))
@@ -688,7 +899,7 @@ def render_post(post, show_actions=True):
             edit_col, delete_col = st.columns(2)
 
             with edit_col:
-                with st.popover("Edit caption"):
+                with st.popover("✎  Edit caption"):
                     new_caption = st.text_area(
                         "Caption",
                         value=post.get("caption") or "",
@@ -705,7 +916,7 @@ def render_post(post, show_actions=True):
 
             with delete_col:
                 if st.button(
-                    "Delete post",
+                    "⌫  Delete post",
                     key=f"delete_{post['id']}",
                     use_container_width=True,
                 ):
@@ -749,7 +960,7 @@ def render_post(post, show_actions=True):
             )
 
             if st.button(
-                "Post comment",
+                "➜  Post comment",
                 key=f"comment_send_{post['id']}",
                 type="primary",
             ):
@@ -839,7 +1050,7 @@ def home_screen():
 
         filtered.append(post)
 
-    st.caption(f"Showing {len(filtered)} of {total} moments")
+    st.markdown(f'<div class="mono" style="color:#92929c;font-size:.68rem;letter-spacing:.6px;text-transform:uppercase;margin:18px 0 10px;">Showing {len(filtered)} of {total} moments</div>', unsafe_allow_html=True)
 
     if not filtered:
         st.info("No moments match this view.")
@@ -908,7 +1119,7 @@ def explore_screen():
         st.info("Nothing found in the current feed.")
         return
 
-    st.caption(f"{len(results)} results")
+    st.markdown(f'<div class="mono" style="color:#92929c;font-size:.68rem;letter-spacing:.6px;text-transform:uppercase;margin:18px 0 10px;">{len(results)} results</div>', unsafe_allow_html=True)
 
     for post in results:
         render_post(post, show_actions=False)
@@ -977,7 +1188,7 @@ def profile_screen():
         )
 
     st.write("")
-    st.subheader("Your moments")
+    st.markdown("<div class=\"section-kicker\">ARCHIVE</div><h2>Your moments</h2>", unsafe_allow_html=True)
 
     profile_posts = profile.get("posts", [])
 
