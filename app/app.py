@@ -43,6 +43,8 @@ from app.users import (
     current_active_user,
 )
 
+from app.messaging import router as messaging_router
+
 
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "50"))
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
@@ -116,6 +118,8 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
+
+app.include_router(messaging_router)
 
 
 @app.get("/me", tags=["users"])
