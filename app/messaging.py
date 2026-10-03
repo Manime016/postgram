@@ -74,7 +74,10 @@ async def get_conversation_for_user(
 ):
     result = await session.execute(
         select(Conversation)
-        .options(selectinload(Conversation.participants))
+        .options(
+            selectinload(Conversation.participants)
+            .selectinload(ConversationParticipant.user)
+        )
         .where(Conversation.id == conversation_id)
     )
     conversation = result.scalar_one_or_none()
