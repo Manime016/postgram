@@ -1397,8 +1397,8 @@ def messages_screen():
             else:
                 for message in messages:
                     mine = (
-                        str(message["sender_id"])
-                        == str(st.session_state.get("token_user_id", ""))
+                        message.get("sender_email")
+                        == st.session_state.email
                     )
 
                     if message.get("deleted_at"):
