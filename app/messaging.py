@@ -91,11 +91,16 @@ async def get_conversation_for_user(
     return conversation
 
 
-def message_dict(message: Message):
+def message_dict(message: Message, sender_email=None):
     return {
         "id": message.id,
         "conversation_id": message.conversation_id,
         "sender_id": str(message.sender_id),
+        "sender_email": (
+            sender_email
+            if sender_email is not None
+            else getattr(message.sender, "email", None)
+        ),
         "content": message.content,
         "message_type": message.message_type,
         "created_at": message.created_at.isoformat(),
@@ -269,6 +274,7 @@ async def list_messages(
 
     query = (
         select(Message)
+        .options(selectinload(Message.sender))
         .where(Message.conversation_id == conversation_id)
         .order_by(Message.created_at.desc())
         .limit(limit)
@@ -317,7 +323,7 @@ async def send_message(
     await session.commit()
     await session.refresh(message)
 
-    payload_data = message_dict(message)
+    payload_data = message_dict(message, user.email)
     await manager.broadcast(
         conversation.id,
         {
@@ -359,7 +365,7 @@ async def edit_message(
     await session.commit()
     await session.refresh(message)
 
-    payload_data = message_dict(message)
+    payload_data = message_dict(message, user.email)
     await manager.broadcast(
         message.conversation_id,
         {
