@@ -17,6 +17,7 @@ dependencies = [
     "python-multipart>=0.0.20",
     "requests>=2.32.0",
     "streamlit>=1.64.0",
+    "streamlit-cookies-manager-ext>=0.1.0",
     "uvicorn[standard]>=0.54.0",
 ]
 
