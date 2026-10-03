@@ -817,33 +817,66 @@ def create_post_panel():
 
 
 def render_sidebar():
-    with st.sidebar:
-        <div class="brand-mark"><div class="brand-symbol">✦</div><div class="brand-name">POSTGRAM</div></div>
-        <div class="brand-sub">visual social space</div>
-        st.divider()
+    nav_items = {
+        "⌂  Home": "Home",
+        "⌕  Explore": "Explore",
+        "＋  Create": "Create",
+        "◉  Profile": "Profile",
+    }
 
-        page = st.radio(
-            "Navigate",
-            ["⌂  Home", "⌕  Explore", "＋  Create", "◉  Profile"],
-            index=[
-                "Home", "Explore", "Create", "Profile"
-            ].index(st.session_state.page),
+    labels = list(nav_items.keys())
+
+    with st.sidebar:
+        st.markdown(
+            '''
+            <div class="brand-mark">
+                <div class="brand-symbol">✦</div>
+                <div class="brand-name">POSTGRAM</div>
+            </div>
+            <div class="brand-sub">visual social space</div>
+            <div class="divider-line"></div>
+            ''',
+            unsafe_allow_html=True,
         )
 
-        if page != st.session_state.page:
-            st.session_state.page = page.split("  ", 1)[-1]
+        current_label = next(
+            label
+            for label, value in nav_items.items()
+            if value == st.session_state.page
+        )
+
+        page = st.radio(
+            "NAVIGATION",
+            labels,
+            index=labels.index(current_label),
+            label_visibility="visible",
+        )
+
+        selected_page = nav_items[page]
+
+        if selected_page != st.session_state.page:
+            st.session_state.page = selected_page
             st.rerun()
 
-        st.divider()
-        st.markdown("<span class=\"eyebrow\">signed in as</span>", unsafe_allow_html=True)
+        st.markdown(
+            '<div class="divider-line"></div>'
+            '<span class="eyebrow">SIGNED IN AS</span>',
+            unsafe_allow_html=True,
+        )
         st.caption(st.session_state.email)
 
-        if st.button("↻  Refresh", use_container_width=True):
+        if st.button(
+            "↻  Refresh",
+            use_container_width=True,
+        ):
             st.session_state.feed_cache = None
             st.session_state.profile_cache = None
             st.rerun()
 
-        if st.button("↪  Sign out", use_container_width=True):
+        if st.button(
+            "↪  Sign out",
+            use_container_width=True,
+        ):
             logout()
 
 
