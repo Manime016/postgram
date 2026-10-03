@@ -1,20 +1,22 @@
 [project]
-name = "fastapi-tutorial"
-version = "0.1.0"
-description = "Add your description here"
+name = "postgram"
+version = "1.0.0"
+description = "A modern photo and video sharing application built with FastAPI, MySQL, ImageKit, and Streamlit."
 readme = "README.md"
 authors = [
     { name = "Manime016", email = "imanikanta016@gmail.com" }
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "aiomysql>=0.3.2",
     "fastapi>=0.141.1",
     "fastapi-users[sqlalchemy]>=15.0.5",
     "imagekitio>=5.10.0",
     "pymysql>=1.2.3",
     "python-dotenv>=1.2.3",
+    "python-multipart>=0.0.20",
     "requests>=2.32.0",
-    "streamlit>=1.50.0",
+    "streamlit>=1.64.0",
     "uvicorn[standard]>=0.54.0",
 ]
 
