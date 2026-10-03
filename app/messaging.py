@@ -16,6 +16,7 @@ from app.db import (
     Message,
     User,
     get_async_session,
+    async_session,
 )
 from app.users import current_active_user, UserManager, get_jwt_strategy
 from fastapi_users.db import SQLAlchemyUserDatabase
@@ -200,7 +201,10 @@ async def list_conversations(
         select(Conversation)
         .join(ConversationParticipant)
         .where(ConversationParticipant.user_id == user.id)
-        .options(selectinload(Conversation.participants))
+        .options(
+            selectinload(Conversation.participants)
+            .selectinload(ConversationParticipant.user)
+        )
         .order_by(Conversation.updated_at.desc())
     )
 
@@ -452,7 +456,7 @@ async def conversation_websocket(
     conversation_id: str,
     token: str = Query(""),
 ):
-    async with get_async_session_context() as session:
+    async with async_session() as session:
         user = await get_ws_user(token, session)
 
         if user is None:
@@ -478,10 +482,3 @@ async def conversation_websocket(
             manager.disconnect(conversation_id, websocket)
 
 
-class get_async_session_context:
-    async def __aenter__(self):
-        self.session = get_async_session()
-        return await self.session.__anext__()
-
-    async def __aexit__(self, exc_type, exc, tb):
-        await self.session.aclose()
