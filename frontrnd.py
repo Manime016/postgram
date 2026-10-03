@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 import streamlit as st
 from streamlit_cookies_manager_ext import EncryptedCookieManager
+from streamlit_autorefresh import st_autorefresh
 
 
 API_URL = os.getenv(
@@ -415,6 +416,7 @@ def init_state():
         "feed_cache": None,
         "profile_cache": None,
         "page": "Home",
+        "active_conversation_id": None,
     }
 
     for key, value in defaults.items():
@@ -725,6 +727,70 @@ def delete_post(post_id):
         st.error("Delete failed.")
 
 
+
+def load_conversations():
+    response = api_request("GET", "/messaging/conversations")
+    handle_401(response)
+    response.raise_for_status()
+    return response.json()
+
+
+def search_message_users(query):
+    response = api_request(
+        "GET",
+        "/messaging/users",
+        params={"q": query, "limit": 20},
+    )
+    handle_401(response)
+    response.raise_for_status()
+    return response.json()
+
+
+def start_conversation(user_id):
+    response = api_request(
+        "POST",
+        "/messaging/conversations",
+        json={"user_id": user_id},
+    )
+    handle_401(response)
+    response.raise_for_status()
+    data = response.json()
+    st.session_state.active_conversation_id = data["id"]
+    return data["id"]
+
+
+def load_messages(conversation_id):
+    response = api_request(
+        "GET",
+        f"/messaging/conversations/{conversation_id}/messages",
+        params={"limit": 100},
+    )
+    handle_401(response)
+    response.raise_for_status()
+    return response.json()
+
+
+def send_message(conversation_id, content):
+    response = api_request(
+        "POST",
+        f"/messaging/conversations/{conversation_id}/messages",
+        json={"content": content},
+    )
+    handle_401(response)
+    response.raise_for_status()
+    return response.json()
+
+
+def mark_conversation_read(conversation_id):
+    response = api_request(
+        "POST",
+        f"/messaging/conversations/{conversation_id}/read",
+    )
+    if response.status_code == 401:
+        handle_401(response)
+    return response.ok
+
+
 def auth_screen():
     left, right = st.columns([1.2, .8], gap="large")
 
@@ -856,6 +922,7 @@ def render_sidebar():
         "⌕  Explore": "Explore",
         "＋  Create": "Create",
         "◉  Profile": "Profile",
+        "✉  Messages": "Messages",
     }
 
     labels = list(nav_items.keys())
@@ -1192,6 +1259,174 @@ def explore_screen():
         render_post(post, show_actions=False)
 
 
+
+def messages_screen():
+    st_autorefresh(
+        interval=2000,
+        key="messages_live_refresh",
+    )
+
+    render_sidebar()
+
+    st.markdown(
+        """
+        <div class="top-hero">
+            <div class="hero-kicker">MESSAGES / LIVE</div>
+            <div class="hero-title">Talk to your people.</div>
+            <div class="hero-sub">
+                Conversations are stored in MySQL and refreshed every
+                two seconds so new messages appear without a manual refresh.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    try:
+        conversations = load_conversations()
+    except requests.RequestException:
+        st.error("Could not load your conversations.")
+        return
+
+    left, right = st.columns([1.05, 2.25], gap="large")
+
+    with left:
+        st.markdown(
+            '<div class="section-kicker">CONVERSATIONS</div>',
+            unsafe_allow_html=True,
+        )
+
+        with st.expander("＋  New conversation", expanded=False):
+            search = st.text_input(
+                "Find a user",
+                placeholder="Search by email...",
+                key="message_user_search",
+            ).strip()
+
+            if search:
+                try:
+                    users = search_message_users(search)
+                except requests.RequestException:
+                    users = []
+
+                for person in users:
+                    if st.button(
+                        person["email"],
+                        key=f"start_chat_{person['id']}",
+                        use_container_width=True,
+                    ):
+                        start_conversation(person["id"])
+                        st.rerun()
+
+        if not conversations:
+            st.info("No conversations yet. Start one above.")
+        else:
+            for conversation in conversations:
+                other = conversation["other_user"]
+                unread = conversation.get("unread_count", 0)
+                active = (
+                    conversation["id"]
+                    == st.session_state.active_conversation_id
+                )
+
+                label = other["email"]
+                if unread:
+                    label = f"{label}  ·  {unread} new"
+
+                if st.button(
+                    label,
+                    key=f"conversation_{conversation['id']}",
+                    use_container_width=True,
+                    type="primary" if active else "secondary",
+                ):
+                    st.session_state.active_conversation_id = conversation["id"]
+                    st.rerun()
+
+    active_id = st.session_state.active_conversation_id
+
+    if active_id is None and conversations:
+        active_id = conversations[0]["id"]
+        st.session_state.active_conversation_id = active_id
+
+    active = next(
+        (item for item in conversations if item["id"] == active_id),
+        None,
+    )
+
+    with right:
+        if active is None:
+            st.markdown(
+                """
+                <div class="hero">
+                    <div class="section-kicker">MESSAGING</div>
+                    <div class="hero-title">Select a conversation.</div>
+                    <div class="hero-sub">
+                        Pick an existing chat or start a new one.
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            return
+
+        st.markdown(
+            f"""
+            <div class="profile-hero" style="padding:22px 26px;margin-bottom:14px;">
+                <div class="hero-kicker">CHAT</div>
+                <div class="profile-email" style="font-size:1.45rem;">
+                    {active["other_user"]["email"]}
+                </div>
+                <div class="profile-small">
+                    Live conversation · Postgram
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        try:
+            messages = load_messages(active_id)
+            mark_conversation_read(active_id)
+        except requests.RequestException:
+            st.error("Could not load messages.")
+            return
+
+        with st.container(height=480, border=True):
+            if not messages:
+                st.caption("No messages yet. Say hello.")
+            else:
+                for message in messages:
+                    mine = (
+                        str(message["sender_id"])
+                        == str(st.session_state.get("token_user_id", ""))
+                    )
+
+                    if message.get("deleted_at"):
+                        text_value = "Message deleted"
+                    else:
+                        text_value = message["content"]
+
+                    with st.chat_message(
+                        "user" if mine else "assistant"
+                    ):
+                        st.write(text_value)
+                        suffix = " · edited" if message.get("edited_at") else ""
+                        st.caption(
+                            f'{format_date(message["created_at"])}{suffix}'
+                        )
+
+        new_message = st.chat_input(
+            "Write a message...",
+            max_chars=2000,
+        )
+
+        if new_message:
+            try:
+                send_message(active_id, new_message)
+                st.rerun()
+            except requests.RequestException:
+                st.error("Could not send the message.")
+
 def create_screen():
     render_sidebar()
 
@@ -1291,6 +1526,8 @@ if st.session_state.logged_in:
         create_screen()
     elif st.session_state.page == "Profile":
         profile_screen()
+    elif st.session_state.page == "Messages":
+        messages_screen()
     else:
         home_screen()
 else:
