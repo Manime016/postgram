@@ -712,6 +712,7 @@ def create_post_panel():
                 f"Images and videos up to "
                 f"{MAX_UPLOAD_MB} MB."
             ),
+            max_upload_size=MAX_UPLOAD_MB,
         )
 
         if uploaded_file:
