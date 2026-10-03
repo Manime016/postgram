@@ -3,6 +3,7 @@ from datetime import datetime
 
 import requests
 import streamlit as st
+from streamlit_cookies_manager_ext import EncryptedCookieManager
 
 
 API_URL = os.getenv(
@@ -11,6 +12,18 @@ API_URL = os.getenv(
 )
 
 MAX_UPLOAD_MB = 50
+COOKIE_SECRET = os.getenv(
+    "POSTGRAM_COOKIE_SECRET",
+    "change-this-cookie-secret-before-production",
+)
+
+cookies = EncryptedCookieManager(
+    prefix="postgram/",
+    password=COOKIE_SECRET,
+)
+
+if not cookies.ready():
+    st.stop()
 
 st.set_page_config(
     page_title="Postgram",
@@ -408,6 +421,19 @@ def init_state():
         if key not in st.session_state:
             st.session_state[key] = value
 
+    saved_token = cookies.get("access_token")
+
+    if (
+        not st.session_state.logged_in
+        and saved_token
+    ):
+        st.session_state.token = saved_token
+        st.session_state.logged_in = True
+
+        saved_email = cookies.get("email")
+        if saved_email:
+            st.session_state.email = saved_email
+
 
 def api_request(method, path, **kwargs):
     headers = kwargs.pop("headers", {})
@@ -445,6 +471,10 @@ def login(email, password):
         st.session_state.token = data["access_token"]
         st.session_state.email = email
         st.session_state.logged_in = True
+
+        cookies["access_token"] = data["access_token"]
+        cookies["email"] = email
+        cookies.save()
         st.session_state.feed_cache = None
         st.session_state.profile_cache = None
         st.session_state.page = "Home"
@@ -494,6 +524,10 @@ def logout():
         "page": "Home",
     }.items():
         st.session_state[key] = value
+
+    cookies["access_token"] = ""
+    cookies["email"] = ""
+    cookies.save()
     st.rerun()
 
 
